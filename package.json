@@ -16,10 +16,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/build-web.mjs",
     "serve": "python3 -m http.server 18763 --bind 127.0.0.1",
     "export:model": "/Applications/Blender.app/Contents/MacOS/Blender --background --factory-startup --python-exit-code 1 --python scripts/export-blender.py",
     "verify:model": "node scripts/verify-model.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "build:blender": "node scripts/build-web.mjs"
   }
 }
