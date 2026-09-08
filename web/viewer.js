@@ -84,9 +84,12 @@ async function start() {
   resize();
   window.addEventListener('resize', resize);
 
-  const asset = new URL('./summer-festival-phase13.glb', import.meta.url);
+  const asset = new URL('./summer-festival-phase13.glb?v=13.1', import.meta.url);
   const gltf = await new GLTFLoader().loadAsync(asset.href, event => {
-    if (event.lengthComputable) el('loading').textContent = `灯火，正在亮起… ${Math.round(event.loaded / event.total * 100)}%`;
+    // FileLoader reports decoded bytes, while Content-Length may be gzip size.
+    // The build records this asset's decoded size; parsing/rendering still remain.
+    const percent = Math.max(0, Math.min(99, Math.floor(event.loaded / __MODEL_BYTE_LENGTH__ * 100)));
+    el('loading').textContent = `灯火，正在亮起… ${percent}%`;
   });
   const model = gltf.scene;
   scene.add(model);
@@ -172,6 +175,7 @@ async function start() {
     controls.update();
     renderer.info.reset();
     composer.render();
+    el('loading')?.remove();
   });
   window.__festival = {
     scene, camera, controls, renderer, model, mixer, phase: 13, layers,
@@ -179,7 +183,6 @@ async function start() {
     get playing() { return playing; }, get exploded() { return exploded; },
     stats: () => ({ ...renderer.info.render, layers: layers.length }),
   };
-  el('loading').remove();
 }
 
 start().catch(error => {

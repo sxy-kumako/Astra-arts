@@ -1,10 +1,20 @@
 """Export the latest native scene for Pages; batch static geometry by collection/material."""
 import bpy
 from pathlib import Path
+from mathutils import Vector
 
 ROOT=Path(__file__).resolve().parents[1]
 bpy.ops.wm.open_mainfile(filepath=str(ROOT/'blender/phase-13.blend'))
 scene=bpy.context.scene;scene.frame_set(1)
+# The native block and paving currently share their top plane. Keep the visible
+# paving height, but end its supporting block at the paving underside for WebGL.
+foundation=bpy.data.objects['UpperTerrace'];paving=bpy.data.objects['UpperTerracePaving']
+bottom=min((foundation.matrix_world @ Vector(p)).z for p in foundation.bound_box)
+top=max((foundation.matrix_world @ Vector(p)).z for p in foundation.bound_box)
+paving_bottom=min((paving.matrix_world @ Vector(p)).z for p in paving.bound_box)
+foundation.scale.z*=(paving_bottom-bottom)/(top-bottom)
+foundation.location.z+=(paving_bottom-top)/2
+bpy.context.view_layer.update()
 web=bpy.data.collections.new('WebExport');scene.collection.children.link(web)
 selected=[];deps=bpy.context.evaluated_depsgraph_get()
 animated={'13_CharacterSample','14_CharacterCoral','15_CharacterSage','16_FallingPetals','17_Fireworks','18_Meteors'}
